@@ -161,7 +161,7 @@ void CRFIDApp::PreLoadState()
 
 void CRFIDApp::LoadCustomState()
 {
-}
+}   
 
 void CRFIDApp::SaveCustomState()
 {

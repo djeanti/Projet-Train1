@@ -5,10 +5,7 @@
 
 #pragma once
 
-#define BUFSIZE    12  // Size of receive buffer (in bytes) (10-byte unique ID + null character)
-
-#define RFID_START  0x0A  // RFID Reader Start and Stop bytes
-#define RFID_STOP   0x0D
+#include "CardReader.h"
 
 class CChildView : public CView
 {
@@ -21,8 +18,7 @@ protected: // création à partir de la sérialisation uniquement
 // Attributs
 public:
 	CRFIDDoc* GetDocument() const;
-	HANDLE hFile; 
-	int Data_thread1;
+	CardReader m_card;
 
 // Opérations
 public:
@@ -33,11 +29,6 @@ public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
 protected:
-	bool initCommunication(LPCWSTR nomPort=_T("\\\\.\\COM3"), DWORD baudRate=CBR_2400, BYTE byParity = NOPARITY, BYTE byStopBits = ONESTOPBIT, BYTE byByteSize  = 8);
-	bool read_rfid();
-	bool write_rfid();
-	void storeBuff(BYTE szBuff[BUFSIZE]);
-	bool getError(CString info);
 
 // Implémentation
 public:

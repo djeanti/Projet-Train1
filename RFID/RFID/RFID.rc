@@ -86,19 +86,8 @@ BEGIN
     POPUP "&Fichier"
     BEGIN
         MENUITEM "&Nouveau\tCtrl+N",            ID_FILE_NEW
-        MENUITEM "&Ouvrir...\tCtrl+O",          ID_FILE_OPEN
-        MENUITEM SEPARATOR
-        MENUITEM "Fichier récent",              ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&quitter",                    ID_APP_EXIT
-    END
-    POPUP "&Edition"
-    BEGIN
-        MENUITEM "&Annuler\tCtrl+Z",            ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "&Couper\tCtrl+X",             ID_EDIT_CUT
-        MENUITEM "C&opier\tCtrl+C",             ID_EDIT_COPY
-        MENUITEM "Co&ller\tCtrl+V",             ID_EDIT_PASTE
     END
     POPUP "&Affichage"
     BEGIN
