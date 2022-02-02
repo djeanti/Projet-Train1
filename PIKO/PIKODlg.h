@@ -16,13 +16,13 @@ struct ThGui//structure pour ThGUI
 	RFID* cards;//tableau des cartes
 	//CButton *m1, *m2, *m3, *m4, *m5, *m6, *m7, *m8;
 	CButton** m_tab;
-	void switchState(BOOL val, int idx, LPCTSTR text=_T("Not connected"))
+	void switchState(BOOL val, int i, LPCTSTR text=_T("Not connected"))
 	{
 		m_tab[i]->EnableWindow(val);
 		m_tab[i]->SetWindowText(text);
 	}
 
-	public THGui(CButton *m1, CButton *m2, CButton *m3, CButton *m4, CButton *m5, CButton *m6, CButton *m7, CButton *m8)//constructor
+	void init(CButton *m1, CButton *m2, CButton *m3, CButton *m4, CButton *m5, CButton *m6, CButton *m7, CButton *m8)//constructor
 	{
 		m_tab = new CButton*[SZ_CARDS];
 		for(size_t i=0;i<SZ_CARDS;i++)
@@ -51,7 +51,7 @@ public:
 	~CPIKODlg()
 	{
 		if(th_gui!=NULL)	CloseHandle(th_gui);
-		delete thgui_struct;
+		//delete thgui_struct;
 	}
 
 // Données de boîte de dialogue
@@ -78,7 +78,7 @@ public:
 protected://attributs:
 	HANDLE th_gui;//thread actualisant l'interface GUI
 	CCards card_manager;
-	ThGui* thgui_struct;
+	ThGui thgui_struct;
 
 protected://methods
 	static DWORD WINAPI ThGUI(void* arg);

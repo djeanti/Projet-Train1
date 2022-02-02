@@ -109,12 +109,8 @@ BOOL CPIKODlg::OnInitDialog()
 
 	// TODO : ajoutez ici une initialisation supplémentaire
 	//le code commenté ci-dessous empeche l'apparition de l'executable du programme 
-	thgui_struct = new ThGui;
-	
-	thgui_struct->m1 = &m_tag1; thgui_struct->m2 = &m_tag2; thgui_struct->m3 = &m_tag3;
-	thgui_struct->m4 = &m_tag4; thgui_struct->m5 = &m_tag5; thgui_struct->m6 = &m_tag6;
-	thgui_struct->m7 = &m_tag7; thgui_struct->m8 = &m_tag8;
-	thgui_struct->cards = card_manager.getRFID();
+	thgui_struct.init(&m_tag1,&m_tag2,&m_tag3,&m_tag4,&m_tag5,&m_tag6,&m_tag7,&m_tag8);
+	thgui_struct.cards = card_manager.getRFID();
 
 	return TRUE;  // retourne TRUE, sauf si vous avez défini le focus sur un contrôle
 }
@@ -182,13 +178,12 @@ DWORD WINAPI CPIKODlg::ThGUI(void* arg)
 				if(!struct_gui->cards[i].NoTag)//On ne lit aucun tag RFID
 				{
 					//On désactive le bouton
-					struct_gui.switchState(FALSE,i);
-					//setButtonState(i, FALSE, struct_gui, _T("No Tag"));
+					struct_gui->switchState(FALSE,i);
 				}
 				else
 				{
-					struct_gui.switchState(TRUE,i,(LPCTSTR)(struct_gui->cards->id_read));//faux
 					//On active le bouton
+					struct_gui->switchState(TRUE,i,(LPCTSTR)(struct_gui->cards->id_read));//faux
 				}
 			}
 		}//end for
@@ -204,7 +199,7 @@ void CPIKODlg::SearchTagsBtn()
 	-créé un thread pour changer l'état des boutons de l'interface GUI régulièrement en fonction de la structure RFID* de cards.
 	*/
 	card_manager.initCommunications();
-	th_gui = ::CreateThread(0,0,ThGUI,thgui_struct,0,0);
+	th_gui = ::CreateThread(0,0,ThGUI,&thgui_struct,0,0);
 	m_searchtags.EnableWindow(FALSE);
 	CString s("searching for tag...");
 	m_searchtags.SetWindowTextW((LPCTSTR)s);
