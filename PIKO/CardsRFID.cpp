@@ -6,6 +6,7 @@ size_t CCards::NB_CONNECTED_CARDS=0;
 //sans initialiser les HANDLE on a une erreur d'édition des liens
 HANDLE CCards::th_com=0;
 HANDLE CCards::th_reads[SZ_CARDS] = {0};
+RFID_button* CCards::card_handler = 0;
 
 bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYTE byStopBits, BYTE byByteSize)//carte numero i
 {
@@ -38,11 +39,11 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 
 	// Set timeouts
 	COMMTIMEOUTS timeout = { 0 };
-	timeout.ReadIntervalTimeout = 10;
-	timeout.ReadTotalTimeoutConstant = 10;
-	timeout.ReadTotalTimeoutMultiplier = 10;
-	timeout.WriteTotalTimeoutConstant = 10;
-	timeout.WriteTotalTimeoutMultiplier = 20;
+	timeout.ReadIntervalTimeout = 50;
+	timeout.ReadTotalTimeoutConstant = 200;// read constant (milliseconds)
+	timeout.ReadTotalTimeoutMultiplier = 100;
+	timeout.WriteTotalTimeoutConstant = 100;
+	timeout.WriteTotalTimeoutMultiplier = 100;
 
 	if (!SetCommTimeouts(card->h, &timeout))
 	{
@@ -54,8 +55,10 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 	return true;
 }
 
-void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
+void CCards::read_rfid(RFID_button* card_handler)//idx = numero de la carte etudiee
 {
+	RFID* card = card_handler->card;
+
 	//fonction statique utilisée uniquement pour lire un tag RFID
 	BYTE szBuff[BUFSIZE];//buffer temporaire
 	for(int i=0;i<BUFSIZE;i++)
@@ -63,6 +66,12 @@ void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 		szBuff[i]=0x00;
 	}
 	DWORD dwBytesRead = 0;
+
+	/*
+		Problème : La carte RFID ne détecte pas le tag même lorsque ce dernier est à côté.
+		A cause du timeout ? oui
+	*/
+	CString tag(""), tmp;
 	do{
 		if(card->h!=NULL)//on ne lit rien si le handle a été supprimé et on sors de la boucle infinie de force
 		{
@@ -71,19 +80,37 @@ void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 					{
 						if(dwBytesRead==12 && szBuff[0]==RFID_START && szBuff[BUFSIZE-1]==RFID_STOP)//on a tout lu correctement
 						{
-							//on stocke le nouveau tag lu dans id_read de la carte RFID
-							for(size_t i=0;i<BUFSIZE;i++)
+						
+							//on stocke le nouveau tag lu dans id_read de la carte RFID (on le fait une seule fois)
+							if(tag == CString(""))
 							{
-								card->id_read[i]=szBuff[i];
+								for(size_t i=0;i<BUFSIZE;i++)
+								{
+									tmp.Format(_T("%c"),(char)szBuff[i]);
+									if(i!=0 && i!=BUFSIZE-1)	tag+= (CString)tmp;
+									card->id_read[i]=(char)szBuff[i];
+								}
 							}
-							card->NoTag=false;//le buffer id_read n'est plus "vide"
+							
+							card_handler->h->updateButton(card->idx, TRUE, (LPCTSTR)tag);
+							debugFile(*card);//on créé le fichier associée pour debug
 						}
-						else//on a pas lu de tag correctement
+						else
 						{
-							card->NoTag=true;//on ne réinitialise pas le buffer mais ce n'est pas grave car c'est cette attribut qu'on analysera dans PIKODlg pour modifier l'état des boutons
+							tag = CString("");
+							for(size_t i=1;i<BUFSIZE-1;i++)
+							{
+								card->id_read[i]=' ';
+							}
+							card_handler->h->updateButton(card->idx, FALSE);
 						}
-
 				}//end ReadFile
+				else//ReadFile a échoué
+				{
+					tag = CString("");
+					debugFile(*card);
+				}
+
 		}
 	}while(1);//boucle infinie
 

@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CButtonHandler.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PIKO.h"
 				>
 			</File>

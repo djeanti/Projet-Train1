@@ -5,8 +5,9 @@
 
 inline void debugFile(RFID card);
 inline void deleteFile(int idx);
+inline void printErrorFile(LPCTSTR fname, LPCTSTR info);
 
-class CCards{
+class CCards{//classe metier
 
 public://attributs
 	RFID* rfid_cards;//tableau de cartes RFID
@@ -14,6 +15,7 @@ public://attributs
 	
 	static HANDLE th_com;//thread pour ecouter les ports
 	static HANDLE th_reads[SZ_CARDS];//tableau de maximum 8 threads, chacun servant a lire ce que la carte numéro idx lit comme TAG ou rien du tout si elle ne lit rien
+	static RFID_button* card_handler;
 
 public://methods
 
@@ -21,16 +23,15 @@ public://methods
 	{
 		//init_HANDLE();
 		rfid_cards = new RFID[SZ_CARDS];
+		card_handler = new RFID_button;
 		initRFID();//on donne une valeur initial a tous les attributs de chaque carte pour éviter un quelconque probleme plus tard
 	}
 
 	//initialisation des cartes avant utilisation :
-	void initBuffs(int i)//idx = numero de la carte rfid etudie
+
+	void setHandler(CButtonHandler* h)//appelee dans InitInstance pour que qd on appel updateButton on appelle la methode surchargée de PIKODlg
 	{
-		for(size_t j=0;j<BUFSIZE;j++)
-		{
-			rfid_cards[i].id_read[j] = rfid_cards[i].id_true[j] = 0x00;
-		}
+		card_handler->h = h;//on en touche plus apres cela
 	}
 
 	void initRFID()
@@ -40,15 +41,13 @@ public://methods
 			rfid_cards[i].idx=i;//normalement idx vaut maximum SZ_CARDS-1
 			rfid_cards[i].COM = CString("NoEntry");
 			rfid_cards[i].isConnected = false;
-			rfid_cards[i].NoTag = true;
-			initBuffs(i);
 		}
 	}
 
 	//demarrage de la communication :
 	bool static initCom(RFID* card, CString COM, DWORD baudRate=CBR_2400, BYTE byParity = NOPARITY, BYTE byStopBits = ONESTOPBIT, BYTE byByteSize  = 8);//pour 1 seule carte
 
-	void static read_rfid(RFID* card);//pour lire le tag d'une carte RFID (tag qu'on affiche a l'ecran)
+	void static read_rfid(RFID_button* card_handler);//pour lire le tag d'une carte RFID (tag qu'on affiche a l'ecran)
 
 	int static searchComCards(RFID* cards, CString COM)//parcours a la recherche du port com en argument, on renvoit -1 si on ne trouve rien
 	{
@@ -66,7 +65,7 @@ public://methods
 	{
 		for(size_t i=0;i<SZ_CARDS;i++)
 		{
-			if(cards[i].isConnected==false)//trouvé
+			if(!cards[i].isConnected)//trouvé
 			{
 				return i;
 			}
@@ -76,13 +75,25 @@ public://methods
 
 	//Multithreading :
 	static DWORD WINAPI ThRead(void* arg) {//multithreading pour modifier les tags lu dans la carte RFID
-		RFID* card = ((RFID*)arg);//<=> cards[j]
-		read_rfid(card);
+		RFID_button* card_handler = ((RFID_button*)arg);//<=> cards[j]
+		//strcuture qui encapsule RFID* et le handler (CButtonHandler)
+		try
+		{
+			read_rfid(card_handler);
+		}
+		catch(std::exception e)
+		{
+			CString str; str.Format(_T("COM%d"),card_handler->card->idx);
+			CString fname = CString("error_thread2") + str + CString(".txt");
+			printErrorFile(fname,str);
+		}
+		
 		return 0;
 	}
 
 	static DWORD WINAPI ThCOM(void* arg) {//multithreading pour evaluer l'etat des cartes en continue
-		RFID* cards = (RFID*)arg; int idx=-1;
+		RFID* cards = (RFID*)arg; 
+		int idx=-2;
 		TCHAR  lpTargetPath[5000]; // buffer to store the path port COM when doing a test
 
 		char pf[10] = "Card5.txt";//pour créé le fichier de chaque carte
@@ -103,20 +114,27 @@ public://methods
 
 				DWORD test = QueryDosDevice(COM, lpTargetPath, 5000);
 				if(test==0)//Aucun device n'est physiquement connecté à COM
-				{
-					deleteFile(idx);
+				{//on a probablement debranché la carte
+					try
+					{
+						//deleteFile(idx);
 
-					//on a probablement debranché la carte
-					
-					//On ferme d'abord le thread chargé de lire en continu les tags de cette carte
-					::CloseHandle(th_reads[idx]);
+						card_handler->h->updateButton(idx, FALSE);//on desactive le bouton
 
-					//on ferme le handle 
-					::CloseHandle(cards[idx].h);
-					cards[idx].COM = CString("NoEntry");
-					cards[idx].isConnected = false;
-					cards[idx].NoTag = false;//Pour éviter de reinitialiser le buffer pour id_read a chaque fois
-					NB_CONNECTED_CARDS--;//censé être toujours positif
+						//On ferme d'abord le thread chargé de lire en continu les tags de cette carte
+						::CloseHandle(th_reads[idx]);
+
+						//on ferme le handle 
+						::CloseHandle(cards[idx].h);
+						cards[idx].COM = CString("NoEntry");
+						cards[idx].isConnected = false;
+						NB_CONNECTED_CARDS--;//censé être toujours positif*/
+					}
+					catch(std::exception e)
+					{
+						CString str; str.Format(_T("COM%d"),idx);
+						printErrorFile(_T("error_thread1.txt"),str);
+					}
 				}
 
 			}//fin du if
@@ -132,22 +150,27 @@ public://methods
 					{
 						if( initCom(cards+j,COM) )//une nouvelle carte RFID a ete connectee correctement
 						{
-							cards[j].COM = COM;
-							cards[j].isConnected = true;
-							cards[j].NoTag = true;
-							//on créé un thread pour lire en continue les tags lu par la carte numéro j et on actualise ainsi les tags id_read de la structure cards (utile après pour PIKODlg)
-							th_reads[j] = ::CreateThread(0,0,ThRead,cards+j,0,0);
-							NB_CONNECTED_CARDS++;
 
-							debugFile(cards[j]);//on créé le fichier associée pour debug
-						}
-						else
-						{
-							//afficher un message d'erreur (on est pas censé ne pas réussir à connecter la carte si elle est bien connectée à COM)
-						}
+							try
+							{
+								cards[j].COM = COM;
+								cards[j].isConnected = true;
 
-					}
-				}
+								//on créé un thread pour lire en continue les tags lu par la carte numéro j 
+								card_handler->card = cards+j;
+								th_reads[j] = ::CreateThread(0,0,ThRead,card_handler,0,0);
+								NB_CONNECTED_CARDS++;
+							}
+							catch(std::exception e)
+							{
+								CString str; str.Format(_T("COM%d"),j);
+								printErrorFile(_T("error_thread1.txt"),str);
+							}
+
+						}//enf if initCom
+
+					}//end if test
+				}//end if j
 
 			}//fin du else if
 
@@ -178,10 +201,9 @@ public://methods
 	~CCards()//destructor
 	{
 		NB_CONNECTED_CARDS = 0;
-
+		delete card_handler;
 		closeCommunications();
 		delete[] rfid_cards;
-
 		if(th_com!=NULL) ::CloseHandle(th_com);		
 	}
 
@@ -194,7 +216,7 @@ public://methods
 			//MessageBox(m_hWnd,h,s,_T("Error"),MB_OK);
 	}
 
-	RFID* getRFID()
+	RFID* getRFIDs()
 	{
 		return rfid_cards;
 	}
@@ -225,21 +247,10 @@ inline void debugFile(RFID card)//print the output of an RFID struct inside a fi
 				 for(int i=0;i<BUFSIZE;i++)//12 fois
 				 {
 						CString buffTag;
-						buffTag.Format(_T("%x"),card.id_read[i]);
+						buffTag.Format(_T("%c"),card.id_read[i]);
 						tmp = (LPCTSTR)buffTag;
 						pf.Write(tmp,sizeof(tmp)*lstrlen(tmp)/2);//format a respecter
 				 }
-
-				 //NoTag
-				 if(card.NoTag)
-				 {
-						tmp = _T("\n\nNoTag = true");
-				 }
-				 else
-				 {
-						tmp = _T("\n\nNoTag = false");
-				 }
-				 pf.Write(tmp,sizeof(tmp)*lstrlen(tmp)/2);//format a respecter
 
 				 //isConnected
 				 if(card.isConnected)
@@ -263,9 +274,6 @@ inline void debugFile(RFID card)//print the output of an RFID struct inside a fi
 		}
 }
 
-#include<iostream>
-#include<stdio.h>
-
 inline void deleteFile(int idx)//supprime les fichiers créé par debugFile
 {
 	char pf[10] = "Card5.txt";
@@ -279,4 +287,22 @@ inline void deleteFile(int idx)//supprime les fichiers créé par debugFile
 	}
 }
 
+inline void printErrorFile(LPCTSTR fname, LPCTSTR info)//print the output of an RFID struct inside a file for debugging purposes
+{
+		try
+		{	
+			CFile pf;
+			if ( pf.Open( fname, CFile::modeCreate |   CFile::modeReadWrite ) )
+			{
+				pf.Write(info,sizeof(info)*lstrlen(info)/2);
+				pf.Close();
+			}
+		}
+		catch (CFileException* pEx)
+		{
+			 // if an error occurs, just make a message box
+			 pEx->ReportError();
+			 pEx->Delete();
+		}
+}
 #endif

@@ -51,6 +51,10 @@ CPIKODlg::CPIKODlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CPIKODlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_tags[0] = &m_tag1; m_tags[1] = &m_tag2;
+	m_tags[2] = &m_tag3; m_tags[3] = &m_tag4; 
+	m_tags[4] = &m_tag5; m_tags[5] = &m_tag6;
+	m_tags[6] = &m_tag7; m_tags[7] = &m_tag8;
 }
 
 void CPIKODlg::DoDataExchange(CDataExchange* pDX)
@@ -64,7 +68,6 @@ void CPIKODlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TAG6, m_tag6);
 	DDX_Control(pDX, IDC_TAG7, m_tag7);
 	DDX_Control(pDX, IDC_TAG8, m_tag8);
-	DDX_Control(pDX, IDC_CONNECT_TAGS, m_searchtags);
 }
 
 BEGIN_MESSAGE_MAP(CPIKODlg, CDialog)
@@ -72,7 +75,6 @@ BEGIN_MESSAGE_MAP(CPIKODlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
-	ON_BN_CLICKED(IDC_CONNECT_TAGS, &CPIKODlg::SearchTagsBtn)
 END_MESSAGE_MAP()
 
 
@@ -108,10 +110,12 @@ BOOL CPIKODlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Définir une petite icône
 
 	// TODO : ajoutez ici une initialisation supplémentaire
-	//le code commenté ci-dessous empeche l'apparition de l'executable du programme 
-	thgui_struct.init(&m_tag1,&m_tag2,&m_tag3,&m_tag4,&m_tag5,&m_tag6,&m_tag7,&m_tag8);
-	thgui_struct.cards = card_manager.getRFID();
-
+	for(int i=0;i<SZ_CARDS;i++)
+	{
+		m_tags[i]->EnableWindow(FALSE);
+		m_tags[i]->SetWindowText(_T("NoTag"));
+	}
+	
 	return TRUE;  // retourne TRUE, sauf si vous avez défini le focus sur un contrôle
 }
 
@@ -164,45 +168,10 @@ HCURSOR CPIKODlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-DWORD WINAPI CPIKODlg::ThGUI(void* arg)
+void CPIKODlg::updateButton(int idx, BOOL val, LPCTSTR text)
 {
-	ThGui* struct_gui = (ThGui*)arg;//contient toute la structure
-	//on actualise l'interface GUI ici (le texte des boutons et si ils sont activés ou désactivés)
-	while(1)
-	{
-		
-		for(size_t i=0;i<SZ_CARDS;i++)
-		{
-			if(struct_gui->cards[i].isConnected)
-			{
-				if(!struct_gui->cards[i].NoTag)//On ne lit aucun tag RFID
-				{
-					//On désactive le bouton
-					struct_gui->switchState(FALSE,i);
-				}
-				else
-				{
-					//On active le bouton
-					struct_gui->switchState(TRUE,i,(LPCTSTR)(struct_gui->cards->id_read));//faux
-				}
-			}
-		}//end for
-	}
-	return 0;
+	m_tags[idx]->EnableWindow(val);
+	m_tags[idx]->SetWindowText(text);
+	//Invalidate();
 }
 
-void CPIKODlg::SearchTagsBtn()
-{
-	/*Role de cette fonction:
-	
-	-Lancer les threads de CCards
-	-créé un thread pour changer l'état des boutons de l'interface GUI régulièrement en fonction de la structure RFID* de cards.
-	*/
-	card_manager.initCommunications();
-	th_gui = ::CreateThread(0,0,ThGUI,&thgui_struct,0,0);
-	m_searchtags.EnableWindow(FALSE);
-	CString s("searching for tag...");
-	m_searchtags.SetWindowTextW((LPCTSTR)s);
-	//Griser les bouttons des tags RFID qui ne sont pas detectés
-	
-}

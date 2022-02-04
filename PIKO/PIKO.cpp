@@ -4,7 +4,6 @@
 
 #include "stdafx.h"
 #include "PIKO.h"
-#include "PIKODlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,7 +47,12 @@ BOOL CPIKOApp::InitInstance()
 	SetRegistryKey(_T("Applications locales générées par AppWizard"));
 
 	CPIKODlg dlg;
+	
+	manager.setHandler(&dlg);
+	manager.initCommunications();//lance les threads
+
 	m_pMainWnd = &dlg;
+
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{

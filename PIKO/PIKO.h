@@ -9,7 +9,8 @@
 #endif
 
 #include "resource.h"		// symboles principaux
-
+#include "CardsRFID.h"
+#include "PIKODlg.h"
 
 // CPIKOApp:
 // Consultez PIKO.cpp pour l'implémentation de cette classe
@@ -17,8 +18,13 @@
 
 class CPIKOApp : public CWinAppEx
 {
+protected:
+	CCards manager;
+
 public:
 	CPIKOApp();
+
+	//cardmanager + threads (tous)
 
 // Substitutions
 	public:
