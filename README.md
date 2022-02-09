@@ -1,3 +1,4 @@
+ @@ -1,106 +0,0 @@
 #Ce fichier explique l'ensemble de procedure a suivre pour pouvoir travailler sur le Porjet Train 1 a distance
 Pre-requis :
 - Un compte github

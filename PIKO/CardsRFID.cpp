@@ -6,7 +6,7 @@ size_t CCards::NB_CONNECTED_CARDS=0;
 //sans initialiser les HANDLE on a une erreur d'édition des liens
 HANDLE CCards::th_com=0;
 HANDLE CCards::th_reads[SZ_CARDS] = {0};
-RFID_button* CCards::card_handler = 0;
+CButtonHandler* CCards::b_h = 0;
 
 bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYTE byStopBits, BYTE byByteSize)//carte numero i
 {
@@ -39,8 +39,8 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 
 	// Set timeouts
 	COMMTIMEOUTS timeout = { 0 };
-	timeout.ReadIntervalTimeout = 50;
-	timeout.ReadTotalTimeoutConstant = 200;// read constant (milliseconds)
+	timeout.ReadIntervalTimeout = 100;
+	timeout.ReadTotalTimeoutConstant = 100;// read constant (milliseconds)
 	timeout.ReadTotalTimeoutMultiplier = 100;
 	timeout.WriteTotalTimeoutConstant = 100;
 	timeout.WriteTotalTimeoutMultiplier = 100;
@@ -55,15 +55,14 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 	return true;
 }
 
-void CCards::read_rfid(RFID_button* card_handler)//idx = numero de la carte etudiee
+void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 {
-	RFID* card = card_handler->card;
-
 	//fonction statique utilisée uniquement pour lire un tag RFID
 	BYTE szBuff[BUFSIZE];//buffer temporaire
 	for(int i=0;i<BUFSIZE;i++)
 	{
 		szBuff[i]=0x00;
+		card->id_read[i]=' ';
 	}
 	DWORD dwBytesRead = 0;
 
@@ -72,6 +71,7 @@ void CCards::read_rfid(RFID_button* card_handler)//idx = numero de la carte etud
 		A cause du timeout ? oui
 	*/
 	CString tag(""), tmp;
+	//debugFile(*card);
 	do{
 		if(card->h!=NULL)//on ne lit rien si le handle a été supprimé et on sors de la boucle infinie de force
 		{
@@ -80,7 +80,6 @@ void CCards::read_rfid(RFID_button* card_handler)//idx = numero de la carte etud
 					{
 						if(dwBytesRead==12 && szBuff[0]==RFID_START && szBuff[BUFSIZE-1]==RFID_STOP)//on a tout lu correctement
 						{
-						
 							//on stocke le nouveau tag lu dans id_read de la carte RFID (on le fait une seule fois)
 							if(tag == CString(""))
 							{
@@ -91,9 +90,7 @@ void CCards::read_rfid(RFID_button* card_handler)//idx = numero de la carte etud
 									card->id_read[i]=(char)szBuff[i];
 								}
 							}
-							
-							card_handler->h->updateButton(card->idx, TRUE, (LPCTSTR)tag);
-							debugFile(*card);//on créé le fichier associée pour debug
+							b_h->updateButton(card->idx, TRUE, tag);					
 						}
 						else
 						{
@@ -102,16 +99,16 @@ void CCards::read_rfid(RFID_button* card_handler)//idx = numero de la carte etud
 							{
 								card->id_read[i]=' ';
 							}
-							card_handler->h->updateButton(card->idx, FALSE);
+							b_h->updateButton(card->idx, FALSE);
 						}
 				}//end ReadFile
 				else//ReadFile a échoué
 				{
 					tag = CString("");
-					debugFile(*card);
+					CString str; str.Format(_T("FICHIER%d.txt"),card->idx);
+					printErrorFile(str,_T("ee"));
 				}
 
 		}
 	}while(1);//boucle infinie
-
 }

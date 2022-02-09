@@ -18,6 +18,7 @@
 
 class CPIKOApp : public CWinAppEx
 {
+	CPIKODlg* dlg;
 protected:
 	CCards manager;
 
