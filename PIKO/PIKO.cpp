@@ -45,15 +45,18 @@ BOOL CPIKOApp::InitInstance()
 	// TODO : modifiez cette chaîne avec des informations appropriées,
 	// telles que le nom de votre société ou organisation
 	SetRegistryKey(_T("Applications locales générées par AppWizard"));
+
+	CPIKODlg dlg;
+
+	m_pMainWnd = &dlg;
+
+	manager = new CCards();
+
+	manager->setHandlerB(&dlg);
+	manager->initCommunications();
+
+	INT_PTR nResponse = dlg.DoModal();
 	
-	dlg = new CPIKODlg;
-
-	manager.setHandler(dlg);
-
-	manager.initCommunications();//lance les threads
-	m_pMainWnd = dlg;
-
-	INT_PTR nResponse = dlg->DoModal();
 	if (nResponse == IDOK)
 	{
 		

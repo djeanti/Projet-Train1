@@ -17,14 +17,21 @@
 #define IDC_TAG6                        1006
 #define IDC_TAG7                        1007
 #define IDC_TAG8                        1008
+#define ID_PIKO_STATIC1                 1013
+#define ID_PIKO_STATIC2                 1014
+#define ID_PIKO_STATIC3                 1015
+#define ID_PIKO_STATIC4                 1016
+#define ID_PIKO_STATIC5                 1017
+#define IDC_LIST1                       1018
+#define IDC_CHECK1                      1019
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        129
+#define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1002
+#define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

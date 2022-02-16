@@ -5,6 +5,7 @@
 #include<stdio.h>
 
 #include "CButtonHandler.h"
+#include "CMessageHandler.h"
 
 #define BUFSIZE    12  // Size of receive buffer (in bytes) (10-byte unique ID + null character)
 

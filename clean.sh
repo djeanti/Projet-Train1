@@ -7,7 +7,7 @@ cd $nomProjet/
 rm *.suo *.ncb
 cd Debug/
 rm *.ilk *.pdb
-cd ../$nomProjet/
+cd ../
 rm *.user
 cd Debug/
 rm *

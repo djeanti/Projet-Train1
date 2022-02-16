@@ -22,18 +22,18 @@ public://methods
 
 	CCards(): rfid_cards(0)//constructor
 	{
-		//init_HANDLE();
 		rfid_cards = new RFID[SZ_CARDS];
 		initRFID();//on donne une valeur initial a tous les attributs de chaque carte pour éviter un quelconque probleme plus tard
 	}
 
-	//initialisation des cartes avant utilisation :
+	//initialisation des handler (pour actualiser les variables de PIKODlg) avant utilisation :
 
-	void setHandler(CButtonHandler* h)//appelee dans InitInstance pour que qd on appel updateButton on appelle la methode surchargée de PIKODlg
+	void setHandlerB(CButtonHandler* h)//appelee dans InitInstance pour que qd on appel updateButton on appelle la methode surchargée de PIKODlg
 	{
 		b_h = h;//on en touche plus apres cela
 	}
 
+	//initialisation des cartes :
 	void initRFID()
 	{
 		for(size_t i=0;i<SZ_CARDS;i++)
@@ -95,11 +95,11 @@ public://methods
 		RFID* cards = (RFID*)arg; 
 		int idx=-2;
 		TCHAR  lpTargetPath[5000]; // buffer to store the path port COM when doing a test
-
+		
 		int i=0;
 		while(1)//on lit tous les 20 ports COM en continue et on connecte/déconnecte les cartes en fonction de ça
 		{
-
+			
 			if(i>20)
 			{
 				i=0;
@@ -179,6 +179,7 @@ public://methods
 
 	void initCommunications()//pour toutes les cartes
 	{
+		b_h->updateButton(1,TRUE,_T("TAG 1 active"));
 		//on lance un thread qui ecoute sur les 20 premiers ports COM de l'ordinateur
 		th_com = ::CreateThread(0,0,ThCOM,rfid_cards,0,0);
 	}
@@ -204,10 +205,6 @@ public://methods
 			//MessageBox(m_hWnd,h,s,_T("Error"),MB_OK);
 	}
 
-	RFID* getRFIDs()
-	{
-		return rfid_cards;
-	}
 };
 
 /*
