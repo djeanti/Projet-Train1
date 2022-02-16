@@ -46,16 +46,17 @@ BOOL CPIKOApp::InitInstance()
 	// telles que le nom de votre société ou organisation
 	SetRegistryKey(_T("Applications locales générées par AppWizard"));
 
-	CPIKODlg dlg;
+	dlg = new CPIKODlg();
 
-	m_pMainWnd = &dlg;
+	m_pMainWnd = dlg;
 
 	manager = new CCards();
 
-	manager->setHandlerB(&dlg);
-	manager->initCommunications();
+	manager->setHandlerB(dlg);
+	manager->setHandlerM(dlg);
+	manager->initCommunications();//appeler cette methode une fois que DoModal a ete appelée (dans CPIKODlg)
 
-	INT_PTR nResponse = dlg.DoModal();
+	INT_PTR nResponse = dlg->DoModal();
 	
 	if (nResponse == IDOK)
 	{

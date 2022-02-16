@@ -17,6 +17,7 @@ public://attributs
 	static HANDLE th_reads[SZ_CARDS];//tableau de maximum 8 threads, chacun servant a lire ce que la carte numéro idx lit comme TAG ou rien du tout si elle ne lit rien
 	
 	static CButtonHandler* b_h;
+	static CMessageHandler* c_h;
 
 public://methods
 
@@ -31,6 +32,11 @@ public://methods
 	void setHandlerB(CButtonHandler* h)//appelee dans InitInstance pour que qd on appel updateButton on appelle la methode surchargée de PIKODlg
 	{
 		b_h = h;//on en touche plus apres cela
+	}
+
+	void setHandlerM(CMessageHandler* h)
+	{
+		c_h = h;//on en touche plus apres cela
 	}
 
 	//initialisation des cartes :
@@ -96,13 +102,19 @@ public://methods
 		int idx=-2;
 		TCHAR  lpTargetPath[5000]; // buffer to store the path port COM when doing a test
 		
-		int i=0;
+		//on est censé appelé la methode de b_h que quand doModal est appelé
+		::Sleep(50);//le temps que doModal soit appelé dans le thread principal on met en pause ce thread
+		
+		c_h->updateMsg(_T("Recherche de cartes RFID ..."));
+
+		int i=0; bool stop=false;
 		while(1)//on lit tous les 20 ports COM en continue et on connecte/déconnecte les cartes en fonction de ça
 		{
-			
-			if(i>20)
+		
+			if(i>255)
 			{
 				i=0;
+				//celui qui appelle updateButton ci-dessous c'est b_h = CButtonHandler
 			}
 
 			CString str; str.Format(_T("%d"),i); CString COM = CString("COM") + CString(str);
@@ -179,7 +191,6 @@ public://methods
 
 	void initCommunications()//pour toutes les cartes
 	{
-		b_h->updateButton(1,TRUE,_T("TAG 1 active"));
 		//on lance un thread qui ecoute sur les 20 premiers ports COM de l'ordinateur
 		th_com = ::CreateThread(0,0,ThCOM,rfid_cards,0,0);
 	}

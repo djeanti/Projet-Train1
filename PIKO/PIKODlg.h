@@ -5,9 +5,12 @@
 #pragma once
 #include "afxwin.h"
 #include "CButtonHandler.h"
+#include "CMessageHandler.h"
 
 #define SZ_TAB_IMAGES 5
+
 #define SEUIL_BG_IMG 240 //seuil pour le format RGB d'un pixel au dela duquel le pixel en question hérite de la couleur de la fenetre MFC
+
 struct IMAGE{
 public:
 	CImage img;
@@ -17,7 +20,7 @@ public:
 }; typedef struct IMAGE IMAGE;
 
 // boîte de dialogue CPIKODlg
-class CPIKODlg : public CDialog, public CButtonHandler
+class CPIKODlg : public CDialog, public CButtonHandler, public CMessageHandler
 {
 // Construction
 public:
@@ -28,7 +31,10 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// Prise en charge de DDX/DDV
-	virtual void updateButton(int idx, BOOL val, LPCTSTR text);
+	//methode surchargée de CButtonHandler :
+	virtual void updateButton(int idx, BOOL val, LPCTSTR text=_T("NoTag"));
+	//methode surchargée de CMessageHandler :
+	virtual void updateMsg(LPCTSTR text);
 
 protected:
 	void blend_img(size_t idx, LPCTSTR img_name);//change the color of some pixel in the image to blend it perfectly to the mfc window

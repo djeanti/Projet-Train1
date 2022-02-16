@@ -118,10 +118,12 @@ BOOL CPIKODlg::OnInitDialog()
 	init_IMAGES();
 
 	// TODO : ajoutez ici une initialisation supplémentaire
+	CString str;
 	for(int i=0;i<SZ_CARDS;i++)
 	{
-		m_tags[i]->EnableWindow(FALSE);
-		m_tags[i]->SetWindowText(_T("NoTag"));
+		m_tags[i]->EnableWindow(FALSE);//ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL)); echoue 
+		str.Format(_T("TAG%d"),i);
+		m_tags[i]->SetWindowText(str);
 	}
 		
 	return TRUE;  // retourne TRUE, sauf si vous avez défini le focus sur un contrôle
@@ -241,29 +243,23 @@ void CPIKODlg::init_IMAGES()
 //handlers :
 void CPIKODlg::updateButton(int idx, BOOL val, LPCTSTR text)
 {
-	//Problème : 
-	/*
-		ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL)); est appelé automatiquement par le système 
-		quand EnableWindow et SetWindowText sont appelés et pour une raison inconnue
-		il se trouve que cette assertion échoue, ce qui n'est pas normale car dans PIKO.cpp
-		on a créé ce handle normalement (dans InitiInstance)
-	*/
-
-	//les deux if commentés ci-dessous ne créé pas d'erreur d'execution donc ::IsWindow(m_hWnd) est faux et m_pCtrlSite==NULL
-	/*if(m_pCtrlSite != NULL)
+	if(::IsWindow(m_hWnd) && m_pCtrlSite!=NULL)//protection contre ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL)) mais inutile grâce au Sleep(50) utilisé au début de ThCOM dans CardsRFID.h
 	{
-			m_tags[idx]->EnableWindow(val);
+		m_tags[idx]->EnableWindow(val);
+		m_tags[idx]->SetWindowText(text);
 	}
 	
-	if(::IsWindow(m_hWnd) == TRUE)
-	{
-			m_tags[idx]->EnableWindow(val);
-	}*/
-
-	m_tags[idx]->EnableWindow(val);//ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL)); echoue 
-	//m_tags[idx]->SetWindowText(text);
 }
 
+void CPIKODlg::updateMsg(LPCTSTR text)
+{
+	if(::IsWindow(m_hWnd) == TRUE)
+	{
+		m_msg.AddString(text);
+	}
+}
+
+//clear messages button :
 void CPIKODlg::OnClearMsg()
 {
 	//supprimer tous les messages de la listbox

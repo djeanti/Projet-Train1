@@ -7,6 +7,7 @@ size_t CCards::NB_CONNECTED_CARDS=0;
 HANDLE CCards::th_com=0;
 HANDLE CCards::th_reads[SZ_CARDS] = {0};
 CButtonHandler* CCards::b_h = 0;
+CMessageHandler* CCards::c_h = 0;
 
 bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYTE byStopBits, BYTE byByteSize)//carte numero i
 {
