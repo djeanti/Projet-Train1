@@ -15,6 +15,7 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 	card->h = CreateFile(COM, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (card->h == INVALID_HANDLE_VALUE) 
 	{ 
+		getError(_T("initComErreur.txt"),_T("CreateFile"));
 		return false;
 	}
 
@@ -24,6 +25,7 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 
 	if (!GetCommState(card->h, &serialParams))
 	{
+		getError(_T("initComErreur.txt"),_T("GetCommState"));
 		return false;
 	}
 
@@ -35,19 +37,21 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 
 	if (!SetCommState(card->h, &serialParams))
 	{
+		getError(_T("initComErreur.txt"),_T("SetCommState"));
 		return false;
 	}
 
 	// Set timeouts
 	COMMTIMEOUTS timeout = { 0 };
-	timeout.ReadIntervalTimeout = 100;
-	timeout.ReadTotalTimeoutConstant = 100;// read constant (milliseconds)
-	timeout.ReadTotalTimeoutMultiplier = 100;
+	timeout.ReadIntervalTimeout = 50;
+	timeout.ReadTotalTimeoutConstant = 50;// read constant (milliseconds)
+	timeout.ReadTotalTimeoutMultiplier = 50;
 	timeout.WriteTotalTimeoutConstant = 100;
 	timeout.WriteTotalTimeoutMultiplier = 100;
 
 	if (!SetCommTimeouts(card->h, &timeout))
 	{
+		getError(_T("initComErreur.txt"),_T("SetCommTimeouts"));
 		return false;
 	}
 
@@ -56,14 +60,13 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 	return true;
 }
 
-void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
+bool CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 {
 	//fonction statique utilisée uniquement pour lire un tag RFID
 	BYTE szBuff[BUFSIZE];//buffer temporaire
 	for(int i=0;i<BUFSIZE;i++)
 	{
 		szBuff[i]=0x00;
-		card->id_read[i]=' ';
 	}
 	DWORD dwBytesRead = 0;
 
@@ -71,10 +74,10 @@ void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 		Problème : La carte RFID ne détecte pas le tag même lorsque ce dernier est à côté.
 		A cause du timeout ? oui
 	*/
-	CString tag(""), tmp;
-	//debugFile(*card);
+	CString tmp, tag("");
+	bool error = false;
 	do{
-		if(card->h!=NULL)//on ne lit rien si le handle a été supprimé et on sors de la boucle infinie de force
+		if(card->h!=NULL)
 		{
 
 					if(ReadFile(card->h, szBuff, BUFSIZE, &dwBytesRead, NULL)!=FALSE)//on a bien lu
@@ -82,34 +85,41 @@ void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 						if(dwBytesRead==12 && szBuff[0]==RFID_START && szBuff[BUFSIZE-1]==RFID_STOP)//on a tout lu correctement
 						{
 							//on stocke le nouveau tag lu dans id_read de la carte RFID (on le fait une seule fois)
-							if(tag == CString(""))
+							for(size_t i=0;i<BUFSIZE;i++)
 							{
-								for(size_t i=0;i<BUFSIZE;i++)
-								{
-									tmp.Format(_T("%c"),(char)szBuff[i]);
-									if(i!=0 && i!=BUFSIZE-1)	tag+= (CString)tmp;
-									card->id_read[i]=(char)szBuff[i];
-								}
+								tmp.Format(_T("%c"),(char)szBuff[i]);
+								if(i!=0 && i!=BUFSIZE-1)	tag+= (CString)tmp;
 							}
-							b_h->updateButton(card->idx, TRUE, tag);					
+							//on a fini de récupérer le tag, maintenant on souhaite savoir quel bouton grisé
+							//chaque bouton est associé à un tag, on appelle la méthode statique associée à ce travail
+							card->id_read=tag;
+
+							int num = from_id_get_button(card->id_read);
+							if(num == -1)	{ error=true; return error;}
+							card->num = num;
+	
+							b_h->updateTagButton(card->num, TRUE);	//le bouton associé au tag BUTTONS_ID[num] devient rouge
+							b_h->updateSupportButton(card->support, TRUE);
+
 						}
 						else
 						{
-							tag = CString("");
-							for(size_t i=1;i<BUFSIZE-1;i++)
-							{
-								card->id_read[i]=' ';
-							}
-							b_h->updateButton(card->idx, FALSE);
+							b_h->updateTagButton(card->num, FALSE);
+							b_h->updateSupportButton(card->support, FALSE);
 						}
+
 				}//end ReadFile
 				else//ReadFile a échoué
 				{
-					tag = CString("");
-					CString str; str.Format(_T("FICHIER%d.txt"),card->idx);
-					printErrorFile(str,_T("ee"));
+					getError(_T("ReadFile_failure.txt"), card->COM);
 				}
 
 		}
+		else//on ne lit rien si le handle a été supprimé et on sors de la boucle infinie de force
+		{
+			break;
+		}
 	}while(1);//boucle infinie
+
+	return error;
 }

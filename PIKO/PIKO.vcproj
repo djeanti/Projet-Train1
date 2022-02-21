@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MsgRFID.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PIKO.cpp"
 				>
 			</File>
@@ -233,6 +237,10 @@
 			</File>
 			<File
 				RelativePath=".\CMessageHandler.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MsgRFID.h"
 				>
 			</File>
 			<File
@@ -284,6 +292,11 @@
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
+			>
+		</File>
+		<File
+			RelativePath=".\RFIDDlgNew.htm"
+			DeploymentContent="true"
 			>
 		</File>
 	</Files>

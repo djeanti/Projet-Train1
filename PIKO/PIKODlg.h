@@ -6,21 +6,15 @@
 #include "afxwin.h"
 #include "CButtonHandler.h"
 #include "CMessageHandler.h"
+#include "afxcmn.h"
+#include "MsgRFID.h"
 
-#define SZ_TAB_IMAGES 5
+#define SZ_TAB_IMAGES 6
 
 #define SEUIL_BG_IMG 240 //seuil pour le format RGB d'un pixel au dela duquel le pixel en question hérite de la couleur de la fenetre MFC
 
-struct IMAGE{
-public:
-	CImage img;
-	CBitmap b;
-	void Load(LPCTSTR _name) {img.Load(_name);} 
-
-}; typedef struct IMAGE IMAGE;
-
 // boîte de dialogue CPIKODlg
-class CPIKODlg : public CDialog, public CButtonHandler, public CMessageHandler
+class CPIKODlg : public CDialog, public CButtonHandler
 {
 // Construction
 public:
@@ -31,47 +25,53 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// Prise en charge de DDX/DDV
-	//methode surchargée de CButtonHandler :
-	virtual void updateButton(int idx, BOOL val, LPCTSTR text=_T("NoTag"));
-	//methode surchargée de CMessageHandler :
-	virtual void updateMsg(LPCTSTR text);
+	//methodes surchargées de CButtonHandler :
+	virtual void updateTagButton(int idx, BOOL val);	
+	virtual void updateSupportButton(int idx, BOOL val);
+	virtual int newButtonPopup();
 
-protected:
+	//autres méthodes :
 	void blend_img(size_t idx, LPCTSTR img_name);//change the color of some pixel in the image to blend it perfectly to the mfc window
 	void init_IMAGES();//initialise le tableau de struct IMAGE
-	
-public:
-	CButton* m_tags[SZ_CARDS];
 
-	CButton m_tag1;
-	CButton m_tag2;
-	CButton m_tag3;
-	CButton m_tag4;
-	CButton m_tag5;
-	CButton m_tag6;
-	CButton m_tag7;
-	CButton m_tag8;
+protected://attributs encapsulés de la fenêtre
+
+	CMFCButton m_tag1;
+	CMFCButton m_tag2;
+	CMFCButton m_tag3;
+	CMFCButton m_tag4;
+	CMFCButton m_tag5;
+	CMFCButton m_tag6;
+	CMFCButton m_tag7;
+	CMFCButton m_tag8;
 
 	CStatic m_static_img1;
 	CStatic m_static_img2;
 	CStatic m_static_img3;
 	CStatic m_static_img4;
 	CStatic m_static_img5;
+	CStatic m_static_circuit;
 
+	CMFCButton m_support1;
+	CMFCButton m_support2;
+	CMFCButton m_support3;
+
+	//tableaux :
+	CMFCButton* m_tags[SZ_CARDS];
+	CMFCButton* m_supports[SZ_SUPPORTS_CARDS];
 	IMAGE tab_img[SZ_TAB_IMAGES];//indice 0 -> m_static_img1 ... 4 -> m_static_img5
-	CListBox m_msg;
 
 // Implémentation
 protected:
 	HICON m_hIcon;
-	
+		
 	// Fonctions générées de la table des messages
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnClearMsg();
+
+	//CMsgRFID dlg;
 
 	DECLARE_MESSAGE_MAP()
-	
 };

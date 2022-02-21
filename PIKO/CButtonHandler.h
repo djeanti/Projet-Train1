@@ -4,7 +4,9 @@
 class CButtonHandler
 {
 public:
-	virtual void updateButton(int idx, BOOL val, LPCTSTR text=_T("NoTag")) = 0;
+	virtual void updateTagButton(int idx, BOOL val) = 0;
+	virtual void updateSupportButton(int idx, BOOL val) = 0;
+	virtual int newButtonPopup() = 0 ;//un message popup demande lorsqu'une nouvelle carte rfid est connectee a quel support elle est associee, on renvoit l'index du support choisi
 };
 
 #endif

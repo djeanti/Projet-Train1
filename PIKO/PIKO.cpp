@@ -53,7 +53,6 @@ BOOL CPIKOApp::InitInstance()
 	manager = new CCards();
 
 	manager->setHandlerB(dlg);
-	manager->setHandlerM(dlg);
 	manager->initCommunications();//appeler cette methode une fois que DoModal a ete appelée (dans CPIKODlg)
 
 	INT_PTR nResponse = dlg->DoModal();

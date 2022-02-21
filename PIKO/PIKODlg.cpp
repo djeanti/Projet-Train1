@@ -10,42 +10,7 @@
 #define new DEBUG_NEW
 #endif
 
-
-// boîte de dialogue CAboutDlg utilisée pour la boîte de dialogue 'À propos de' pour votre application
-
-class CAboutDlg : public CDialog
-{
-public:
-	CAboutDlg();
-
-// Données de boîte de dialogue
-	enum { IDD = IDD_ABOUTBOX };
-
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // Prise en charge de DDX/DDV
-
-// Implémentation
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-END_MESSAGE_MAP()
-
-
 // boîte de dialogue CPIKODlg
-
-
-
 
 CPIKODlg::CPIKODlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CPIKODlg::IDD, pParent)
@@ -55,6 +20,13 @@ CPIKODlg::CPIKODlg(CWnd* pParent /*=NULL*/)
 	m_tags[2] = &m_tag3; m_tags[3] = &m_tag4; 
 	m_tags[4] = &m_tag5; m_tags[5] = &m_tag6;
 	m_tags[6] = &m_tag7; m_tags[7] = &m_tag8;
+
+	m_supports[0]= &m_support1; m_supports[1]= &m_support2;
+	m_supports[2]= &m_support3;
+	for(int i=3;i<SZ_CARDS;i++)
+	{
+		m_supports[i]=0;
+	}
 }
 
 void CPIKODlg::DoDataExchange(CDataExchange* pDX)
@@ -73,14 +45,16 @@ void CPIKODlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, ID_PIKO_STATIC3, m_static_img3);
 	DDX_Control(pDX, ID_PIKO_STATIC4, m_static_img4);
 	DDX_Control(pDX, ID_PIKO_STATIC5, m_static_img5);
-	DDX_Control(pDX, IDC_LIST1, m_msg);
+	DDX_Control(pDX, ID_PIKO_STATIC6, m_static_circuit);
+	DDX_Control(pDX, IDC_SUPPORT3, m_support1);
+	DDX_Control(pDX, IDC_SUPPORT2, m_support2);
+	DDX_Control(pDX, IDC_SUPPORT1, m_support3);
 }
 
 BEGIN_MESSAGE_MAP(CPIKODlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &CPIKODlg::OnClearMsg)
 END_MESSAGE_MAP()
 
 
@@ -93,7 +67,7 @@ BOOL CPIKODlg::OnInitDialog()
 	// Ajouter l'élément de menu "À propos de..." au menu Système.
 
 	// IDM_ABOUTBOX doit se trouver dans la plage des commandes système.
-	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+	/*ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
@@ -108,12 +82,13 @@ BOOL CPIKODlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_SEPARATOR);
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
-	}
+	}*/
 
 	// Définir l'icône de cette boîte de dialogue. L'infrastructure effectue cela automatiquement
 	//  lorsque la fenêtre principale de l'application n'est pas une boîte de dialogue
 	SetIcon(m_hIcon, TRUE);			// Définir une grande icône
 	SetIcon(m_hIcon, FALSE);		// Définir une petite icône
+
 
 	init_IMAGES();
 
@@ -121,8 +96,8 @@ BOOL CPIKODlg::OnInitDialog()
 	CString str;
 	for(int i=0;i<SZ_CARDS;i++)
 	{
+		str.Format(_T("TAG %d"),i);
 		m_tags[i]->EnableWindow(FALSE);//ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL)); echoue 
-		str.Format(_T("TAG%d"),i);
 		m_tags[i]->SetWindowText(str);
 	}
 		
@@ -131,15 +106,16 @@ BOOL CPIKODlg::OnInitDialog()
 
 void CPIKODlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+	/*if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
+		//CAboutDlg dlgAbout;
+		//dlgAbout.DoModal();
 	}
 	else
 	{
 		CDialog::OnSysCommand(nID, lParam);
-	}
+	}*/
+	CDialog::OnSysCommand(nID, lParam);
 }
 
 // Si vous ajoutez un bouton Réduire à votre boîte de dialogue, vous devez utiliser le code ci-dessous
@@ -216,7 +192,6 @@ void CPIKODlg::init_IMAGES()
 	blend_img(idx, _T("wagon1_60.png"));
 	tab_img[idx].b.Attach(tab_img[idx].img);
 	m_static_img1.SetBitmap( tab_img[idx].b );
-	//m_static_img1.SetWindowPos(this,1000,1000,tab_img[0].img.GetWidth(),tab_img[0].img.GetHeight(),SS_BITMAP | SS_CENTERIMAGE);
 
 	idx+=1;
 	blend_img(idx, _T("wagon2_60.png"));
@@ -237,31 +212,93 @@ void CPIKODlg::init_IMAGES()
 	blend_img(idx, _T("wagon4_60.png"));
 	tab_img[idx].b.Attach(tab_img[idx].img);
 	m_static_img5.SetBitmap( tab_img[idx].b );
+
+	//circuit :
+	idx+=1;
+	blend_img(idx, _T("circuit.png"));
+	tab_img[idx].b.Attach(tab_img[idx].img);
+	m_static_circuit.SetBitmap( tab_img[idx].b );
+
+	//supports :
+	for(int i=0; i<3; i++)
+	{
+		m_supports[i]->EnableWindow(FALSE);
+	}
 }
 
 
 //handlers :
-void CPIKODlg::updateButton(int idx, BOOL val, LPCTSTR text)
+void CPIKODlg::updateTagButton(int idx, BOOL val)
 {
-	if(::IsWindow(m_hWnd) && m_pCtrlSite!=NULL)//protection contre ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL)) mais inutile grâce au Sleep(50) utilisé au début de ThCOM dans CardsRFID.h
-	{
 		m_tags[idx]->EnableWindow(val);
-		m_tags[idx]->SetWindowText(text);
-	}
+		if(val==TRUE)//couleur du bouton change
+		{
+			m_tags[idx]->SetFaceColor(RGB(255,0,0),true);
+			m_tags[idx]->SetTextColor(RGB(255,255,255));
+			m_tags[idx]->SetWindowText(_T("Detected !"));
+		}
+		else
+		{
+			COLORREF MFC_Dlg_Color = ::GetSysColor(COLOR_3DFACE);
+			int R, G, B;
+			R = GetRValue(MFC_Dlg_Color); G = GetGValue(MFC_Dlg_Color); B = GetBValue(MFC_Dlg_Color);
+			m_tags[idx]->SetFaceColor(RGB(R,G,B),true);
+			m_tags[idx]->SetTextColor(RGB(0,0,0));	
+			m_tags[idx]->SetWindowText(_T(""));
+		}
+		//CString str; str.Format(_T("TAG %d"),idx);
+		//m_tags[idx]->SetWindowText(str);
+}
+
+
+void CPIKODlg::updateSupportButton(int idx, BOOL val)
+{
+		if(val==TRUE)
+		{
+			m_supports[idx]->SetFaceColor(RGB(255,0,0),true);
+			m_supports[idx]->SetTextColor(RGB(255,255,255));
+			m_supports[idx]->SetWindowText(_T("TAG !"));
+		}
+		else//couleur par défaut
+		{
+			COLORREF MFC_Dlg_Color = ::GetSysColor(COLOR_3DFACE);
+			int R, G, B;
+			R = GetRValue(MFC_Dlg_Color); G = GetGValue(MFC_Dlg_Color); B = GetBValue(MFC_Dlg_Color);
+			m_supports[idx]->SetFaceColor(RGB(R,G,B),true);
+			m_supports[idx]->SetTextColor(RGB(0,0,0));
+			m_supports[idx]->SetWindowText(_T(""));
+		}
+		
+}
+
+int CPIKODlg::newButtonPopup()
+{
+	/*
+		Affiche une nouvelle fenêtre à chaque fois qu'une nouvelle carte est connectée
+		Quand on choisit le support sur cette nouvelle fenêtre, on récupère cette information
+		puis on renvoit l'index du support séléctionné ici (de 1 à 3 car on a 3 support en tout).
+	*/
+	int idx_support=-1;
+
+	CMsgRFID dlg;
 	
-}
-
-void CPIKODlg::updateMsg(LPCTSTR text)
-{
-	if(::IsWindow(m_hWnd) == TRUE)
+	if(!dlg.isAvailableSupport())//la messageBox continue d'apparaitre encore et encore
 	{
-		m_msg.AddString(text);
+		::MessageBox(m_hWnd,_T("Aucun support pour cette carte de disponible"),_T("Alerte !"),MB_OK);
+		return idx_support;
 	}
-}
+	else
+	{
+		INT_PTR nResponse = dlg.DoModal();
 
-//clear messages button :
-void CPIKODlg::OnClearMsg()
-{
-	//supprimer tous les messages de la listbox
-	m_msg.ResetContent();
+		if(nResponse == IDOK)
+		{
+			idx_support = dlg.GetAnswer();
+			//on recupère les informations (Quel support a été sélectionné)
+			//on supprime le support numéro idx_support de la liste des supports dont il est possible d'associer une carte, 
+			//cela signifie que la prochaine carte qu'on connectera, on aura un support de moins de disponible pour associe la carte
+		}
+	}
+
+	return idx_support;
 }
