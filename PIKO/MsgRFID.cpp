@@ -11,13 +11,15 @@
 IMPLEMENT_DYNAMIC(CMsgRFID, CDialog)
 
 //static :
-int CMsgRFID::number_available_support = 3;
+
+//int CMsgRFID::number_available_support = 3;
+
 bool CMsgRFID::support1_selected = false;
 bool CMsgRFID::support2_selected = false;
 bool CMsgRFID::support3_selected = false;
 
 CMsgRFID::CMsgRFID(CWnd* pParent /*=NULL*/)
-	: CDialog(CMsgRFID::IDD, pParent), support1Checked(FALSE), support2Checked(FALSE), support3Checked(FALSE), support_idx(-1)
+	: CDialog(CMsgRFID::IDD, pParent), support_idx(-1), support1Checked(FALSE), support2Checked(FALSE), support3Checked(FALSE)
 {
 	
 }
@@ -103,7 +105,7 @@ void CMsgRFID::OnSupport1Clicked()
 	m_support2.EnableWindow(!support1Checked);
 	m_support3.EnableWindow(!support1Checked);
 
-	support_idx = 1;
+	support_idx = 0;
 }
 
 void CMsgRFID::OnSupport2Clicked()
@@ -114,7 +116,7 @@ void CMsgRFID::OnSupport2Clicked()
 	m_support1.EnableWindow(!support2Checked);
 	m_support3.EnableWindow(!support2Checked);
 
-	support_idx = 2;
+	support_idx = 1;
 }
 
 void CMsgRFID::OnSupport3Clicked()
@@ -125,21 +127,50 @@ void CMsgRFID::OnSupport3Clicked()
 	m_support1.EnableWindow(!support3Checked);
 	m_support2.EnableWindow(!support3Checked);
 
-	support_idx = 3;
+	support_idx = 2;
 }
 
 void CMsgRFID::OnBnClickedOk()
 {
-
-	// TODO : ajoutez ici le code de votre gestionnaire de notification de contrôle
-	if(support1Checked==TRUE || support2Checked==TRUE || support3Checked==TRUE)
+	if( support_idx!=-1 )//on regarde si on a pas déjà séléectionné ce support 
 	{
-		if(!support1_selected)	support1_selected = (support1Checked==TRUE);
-		if(!support2_selected)	support2_selected = (support2Checked==TRUE);
-		if(!support3_selected)	support3_selected = (support3Checked==TRUE);
-		
-		number_available_support--;
-		OnOK();
+			//actualisation des attributs statiques :
+			switch(support_idx)
+			{
+				case 0:
+					if(support1_selected)//support 1 deja selectionné
+					{
+						::MessageBox(m_hWnd,_T("Ce support est déjà associé à une carte !"),_T("Choix incorrect"),MB_OK);
+					}
+					else
+					{
+						support1_selected = true;
+					}
+					break;
+				case 1:
+					if(support2_selected)//support 2 deja selectionné
+					{
+						::MessageBox(m_hWnd,_T("Ce support est déjà associé à une carte !"),_T("Choix incorrect"),MB_OK);
+					}
+					else
+					{
+						support2_selected = true;
+					}
+					break;
+				case 2:
+					if(support3_selected)//support 3 deja selectionné
+					{
+						::MessageBox(m_hWnd,_T("Ce support est déjà associé à une carte !"),_T("Choix incorrect"),MB_OK);
+					}
+					else
+					{
+						support3_selected = true;
+					}
+					break;
+			}//end switch
+	
+			OnOK();
+			
 	}
 	else
 	{
@@ -152,8 +183,13 @@ int CMsgRFID::GetAnswer()
 {
 	return support_idx;
 }
-
+/*
 bool CMsgRFID::isAvailableSupport()
 {
 	return number_available_support>0;
+}*/
+
+void CMsgRFID::OnClose()
+{
+	OnOK();
 }

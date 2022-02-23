@@ -17,14 +17,12 @@
 
 struct RFID{//modelise une carte RFID
 	HANDLE h;
-	CString id_read;//id qu'on lit (a cause de l'encryption)
-	CString COM;//le nom du port COM ou elle est connecte (chaine vide sinon)
+	CString id_read;//id du tag qu'on lit
+	CString COM;//le nom du port COM ou elle est connectee (chaine vide sinon)
 	int support;//a quel  support (1, 2 ou 3) la carte est elle posée sur le circuit réel
-	bool isConnected;
-	int num;//numero du bouton sur l'interface GUI de CPIKDlg auquel le tag lu est associé (on le définit dans le thread rfid_read associé à chaque carte
+	bool isConnected;//pour savoir si le lecteur est connectée ou non
+	int num;//numero du bouton sur l'interface GUI de CPIKDlg auquel le tag lu est associé
 };typedef struct RFID RFID;
-//si la carte est deco elle contient CString("NoEntry") comme port, id_read et id_true sont vide et isConnected=false
-//idx : on aura toujours le meme ordre : 0,1,2,3,4,5,6,7, si tag 4 est deconeecte l'idx ne changera pas, des qu'il sera reconnecté meme a un autre port com on l'affichera toujours sur le bouton tag4 associé
 
 struct IMAGE{
 public:
@@ -36,14 +34,14 @@ public:
 
 
 
-const CString BUTTONS_ID[SZ_CARDS] = {CString("0419EC51B8"), //id du TAG associé au bouton 1 de la fenetre GUI CPIKODlg
-											CString(""), 
-											CString(""),
-											CString(""), 
-											CString(""),
-											CString(""), 
-											CString(""),
-											CString("")};
+const CString BUTTONS_ID[SZ_CARDS] = {CString("0419EC51B8"), //arriere wagon principal
+																			CString("0419AE51CA"),  //avant wagon principal
+																			CString("0419AE560B"), //tag situé sur le wagon 2 
+																			CString("0419EC4450"),  //tag situé a l'arriere du wagon 1
+																			CString("0419EC4662"), //tag situé a l'avant du wagon 1
+																			CString("0419EC4200"),  //arriere wagon 3
+																			CString("0419EC5A8D"), //avant wagon 3
+																			CString("0419EC5ECB")};//tag situé sur le wagon 4
 
 inline int from_id_get_button(CString id)
 {
@@ -53,6 +51,7 @@ inline int from_id_get_button(CString id)
 	{
 		if(BUTTONS_ID[i]==id)	return i;
 	}
+
 	return res;//-11 : impossible a renvoyer normalement
 }
 

@@ -60,7 +60,7 @@ bool CCards::initCom(RFID* card, CString COM, DWORD baudRate, BYTE byParity, BYT
 	return true;
 }
 
-bool CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
+void CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 {
 	//fonction statique utilisée uniquement pour lire un tag RFID
 	BYTE szBuff[BUFSIZE];//buffer temporaire
@@ -84,6 +84,7 @@ bool CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 					{
 						if(dwBytesRead==12 && szBuff[0]==RFID_START && szBuff[BUFSIZE-1]==RFID_STOP)//on a tout lu correctement
 						{
+							tag = CString("");
 							//on stocke le nouveau tag lu dans id_read de la carte RFID (on le fait une seule fois)
 							for(size_t i=0;i<BUFSIZE;i++)
 							{
@@ -92,18 +93,22 @@ bool CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 							}
 							//on a fini de récupérer le tag, maintenant on souhaite savoir quel bouton grisé
 							//chaque bouton est associé à un tag, on appelle la méthode statique associée à ce travail
+						
+							//getError(_T("ReadFile_failure.txt"), tag);
+							int num = from_id_get_button(tag);
+							
+							
 							card->id_read=tag;
-
-							int num = from_id_get_button(card->id_read);
-							if(num == -1)	{ error=true; return error;}
 							card->num = num;
-	
-							b_h->updateTagButton(card->num, TRUE);	//le bouton associé au tag BUTTONS_ID[num] devient rouge
+
+							b_h->updateTagButton(num, TRUE);	//le bouton associé au tag BUTTONS_ID[num] devient rouge
 							b_h->updateSupportButton(card->support, TRUE);
+							
 
 						}
 						else
 						{
+
 							b_h->updateTagButton(card->num, FALSE);
 							b_h->updateSupportButton(card->support, FALSE);
 						}
@@ -115,11 +120,11 @@ bool CCards::read_rfid(RFID* card)//idx = numero de la carte etudiee
 				}
 
 		}
-		else//on ne lit rien si le handle a été supprimé et on sors de la boucle infinie de force
+		else
 		{
-			break;
+			return;
 		}
+		
 	}while(1);//boucle infinie
 
-	return error;
 }

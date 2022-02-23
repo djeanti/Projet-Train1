@@ -28,7 +28,8 @@ public://methods
 
 	//initialisation des handler (pour actualiser les variables de PIKODlg) avant utilisation :
 
-	void setHandlerB(CButtonHandler* h)//appelee dans InitInstance pour que qd on appel updateButton on appelle la methode surchargée de PIKODlg
+	void setHandlerB(CButtonHandler* h)
+		//appelee dans InitInstance pour que qd on appel updateButton on appelle la methode surchargée de PIKODlg
 	{
 		b_h = h;//on en touche plus apres cela
 	}
@@ -65,13 +66,16 @@ private :
 			rfid_cards[i].num = rfid_cards[i].support = -1;//normalement idx vaut maximum SZ_CARDS-1
 			rfid_cards[i].COM = rfid_cards[i].id_read = CString("");
 			rfid_cards[i].isConnected = false;
+			rfid_cards[i].h = NULL;
+			th_reads[i] = NULL;
 		}
 	}
 
 	//demarrage de la communication :
 	bool static initCom(RFID* card, CString COM, DWORD baudRate=CBR_2400, BYTE byParity = NOPARITY, BYTE byStopBits = ONESTOPBIT, BYTE byByteSize  = 8);//pour 1 seule carte
 
-	bool static read_rfid(RFID* card);//pour lire le tag d'une carte RFID (tag qu'on affiche a l'ecran)
+
+	void static read_rfid(RFID* card);//pour lire le tag d'une carte RFID (tag qu'on affiche a l'ecran)
 
 	int static searchComCards(RFID* cards, CString COM)//parcours a la recherche du port com en argument, on renvoit -1 si on ne trouve rien
 	{
@@ -89,7 +93,7 @@ private :
 	{
 		for(size_t i=0;i<SZ_CARDS;i++)
 		{
-			if(!cards[i].isConnected)//trouvé
+			if(cards[i].h==NULL)//trouvé
 			{
 				return i;
 			}
@@ -102,23 +106,11 @@ private :
 		RFID* card = ((RFID*)arg);//<=> cards[j]
 		//structure qui encapsule RFID* et le handler (CButtonHandler)
 		bool result = false;
-		try
-		{
-			result = read_rfid(card);
-		}
-		catch(std::exception e)
-		{
-				getError(_T("error_thread2.txt"));
-		}
+		read_rfid(card);
 
 		//on désactive les boutons de la GUI :
-		b_h->updateTagButton(card->num, FALSE);
-		b_h->updateSupportButton(card->support, FALSE);//le bon support boutton (associé a cette carte) devient rouge 
-
-		if(result)//erreur de la part de from_id_get_button (on est pas censé avoir cette erreur si on travaille avec les tags dont les identifiants sont tous notés dans BUTTONS_ID)
-		{
-				getError(_T("error_thread2.txt"));
-		}
+		//b_h->updateTagButton(card->num, FALSE);
+		//b_h->updateSupportButton(card->support, FALSE);//le bon support boutton (associé a cette carte) devient rouge 
 
 		return 0;
 	}
@@ -129,7 +121,7 @@ private :
 		TCHAR  lpTargetPath[5000]; // buffer to store the path port COM when doing a test
 		
 		//on est censé appelé la methode de b_h que quand doModal est appelé
-		::Sleep(5000);//le temps que doModal soit appelé dans le thread principal on met en pause ce thread
+		::Sleep(50);//le temps que doModal soit appelé dans le thread principal on met en pause ce thread
 
 		int i=0;
 		int nb=0, nb2=0;
@@ -156,11 +148,13 @@ private :
 				{//on a probablement debranché la carte
 					try
 					{
+						b_h->releaseSupportButton(cards[idx].support);
+
 						//On ferme d'abord le thread chargé de lire en continu les tags de cette carte
-						::CloseHandle(th_reads[idx]);
+						::CloseHandle(th_reads[idx]); th_reads[idx] = NULL;
 
 						//on ferme le handle 
-						::CloseHandle(cards[idx].h);
+						::CloseHandle(cards[idx].h); cards[idx].h =NULL;
 
 						//on réinitialise la carte dans la structure :
 						cards[idx].COM = cards[idx].id_read = CString("");
@@ -193,8 +187,9 @@ private :
 							try
 							{
 								//on veut savoir sur le circuit réel sur quel support la carte est située : on demande à l'utilisateur vaec newButtonPopup
-								int support_idx  = b_h->newButtonPopup();//on ne peut le faire que trois fois (car on ne peut mettre que 3 supports maximum dans le circuit réel, si on en met plus, il y aura interférences entre les lecteurs RFID)
-								if( 1<= support_idx && support_idx<=3)
+								int support_idx = b_h->newButtonPopup(COM,j);//on ne peut le faire que trois fois (car on ne peut mettre que 3 supports maximum dans le circuit réel, si on en met plus, il y aura interférences entre les lecteurs RFID)
+								
+							  if( support_idx!=-1 )
 								{//on a trouvé un support : on modifie donc card[j] pour pouvoir l'utiliser
 									cards[j].support = support_idx;
 									cards[j].COM = COM;
@@ -203,25 +198,28 @@ private :
 
 									//on créé un thread pour lire en continue les tags lu par la carte numéro j 
 									th_reads[j] = ::CreateThread(0,0,ThRead,cards+j,0,0);
-								
 								}
-								else//on ferme la connection -> on ne peut pas travailler avec cette carte si aucun support sur la fenetre GUI ne lui est associé
-								{//plus assez de suppport peuvent acceuillir de cartes sur le circuit réel
-									::CloseHandle(cards[j].h);
-									CString str; str.Format(_T("Une carte a tente de se connecte au port COM%d mais il n'y a plus assez de support pour la connecter"),j);
-									getError(_T("NoMoreSupportAvailable.txt"),str);
+								else
+								{
+									getError(_T("error_thread1.txt"));
 								}
 
-							}
+							}//fin try
 							catch(std::exception e)
 							{
 								getError(_T("error_thread1.txt"));
-							}
+							}//fin catch
 
 						}//enf if initCom
-		
-					}//end if test
-				}//end if j
+						else//on ferme la connection -> on ne peut pas travailler avec cette carte si aucun support sur la fenetre GUI ne lui est associé
+						{//plus assez de suppport peuvent acceuillir de cartes sur le circuit réel
+							::CloseHandle(cards[j].h);
+							CString str; str.Format(_T("Une carte a tente de se connecte au port COM%d mais il n'y a plus assez de support pour la connecter"),j);
+							getError(_T("initComErreur.txt"),str);
+						}
+
+					}//end if j
+				}//end test
 
 			}//fin du else if
 

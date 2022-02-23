@@ -28,7 +28,8 @@ protected:
 	//methodes surchargées de CButtonHandler :
 	virtual void updateTagButton(int idx, BOOL val);	
 	virtual void updateSupportButton(int idx, BOOL val);
-	virtual int newButtonPopup();
+	virtual int newButtonPopup(CString COM, int num_card);
+	virtual void releaseSupportButton(int idx);
 
 	//autres méthodes :
 	void blend_img(size_t idx, LPCTSTR img_name);//change the color of some pixel in the image to blend it perfectly to the mfc window
@@ -70,8 +71,6 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-
-	//CMsgRFID dlg;
 
 	DECLARE_MESSAGE_MAP()
 };

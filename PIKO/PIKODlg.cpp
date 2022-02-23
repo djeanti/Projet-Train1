@@ -96,7 +96,8 @@ BOOL CPIKODlg::OnInitDialog()
 	CString str;
 	for(int i=0;i<SZ_CARDS;i++)
 	{
-		str.Format(_T("TAG %d"),i);
+		//str.Format(_T("TAG %d"),i);
+		str = BUTTONS_ID[i];
 		m_tags[i]->EnableWindow(FALSE);//ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL)); echoue 
 		m_tags[i]->SetWindowText(str);
 	}
@@ -189,7 +190,7 @@ void CPIKODlg::init_IMAGES()
 {
 	//Charger les images :
 	size_t idx=0;
-	blend_img(idx, _T("wagon1_60.png"));
+	blend_img(idx, _T("main_wagon_60.png"));
 	tab_img[idx].b.Attach(tab_img[idx].img);
 	m_static_img1.SetBitmap( tab_img[idx].b );
 
@@ -199,7 +200,7 @@ void CPIKODlg::init_IMAGES()
 	m_static_img2.SetBitmap( tab_img[idx].b );
 
 	idx+=1;
-	blend_img(idx, _T("main_wagon_60.png"));
+	blend_img(idx, _T("wagon1_60.png"));
 	tab_img[idx].b.Attach(tab_img[idx].img);
 	m_static_img3.SetBitmap( tab_img[idx].b );
 
@@ -230,7 +231,15 @@ void CPIKODlg::init_IMAGES()
 //handlers :
 void CPIKODlg::updateTagButton(int idx, BOOL val)
 {
+
+		//CString str; str.Format(_T("tag = %d"),idx);
+		//::MessageBox(m_hWnd,str,_T("msg"),MB_OK);
+
+		if(idx>=SZ_CARDS || idx <0)	return;
+	
+
 		m_tags[idx]->EnableWindow(val);
+
 		if(val==TRUE)//couleur du bouton change
 		{
 			m_tags[idx]->SetFaceColor(RGB(255,0,0),true);
@@ -244,17 +253,25 @@ void CPIKODlg::updateTagButton(int idx, BOOL val)
 			R = GetRValue(MFC_Dlg_Color); G = GetGValue(MFC_Dlg_Color); B = GetBValue(MFC_Dlg_Color);
 			m_tags[idx]->SetFaceColor(RGB(R,G,B),true);
 			m_tags[idx]->SetTextColor(RGB(0,0,0));	
-			m_tags[idx]->SetWindowText(_T(""));
+			
+			//CString c_str; c_str.Format(_T("TAG %d"),idx);
+			m_tags[idx]->SetWindowText(BUTTONS_ID[idx]);
 		}
 		//CString str; str.Format(_T("TAG %d"),idx);
-		//m_tags[idx]->SetWindowText(str);
+		//m_tags[idx]->SetWindowText(_T());
 }
 
 
 void CPIKODlg::updateSupportButton(int idx, BOOL val)
 {
+
+		if(idx>=SZ_SUPPORTS_CARDS || idx <0)	return;
+
 		if(val==TRUE)
 		{
+				//CString str; str.Format(_T("support = %d"),idx);
+	//::MessageBox(m_hWnd,str,_T("msg"),MB_OK);
+
 			m_supports[idx]->SetFaceColor(RGB(255,0,0),true);
 			m_supports[idx]->SetTextColor(RGB(255,255,255));
 			m_supports[idx]->SetWindowText(_T("TAG !"));
@@ -271,7 +288,7 @@ void CPIKODlg::updateSupportButton(int idx, BOOL val)
 		
 }
 
-int CPIKODlg::newButtonPopup()
+int CPIKODlg::newButtonPopup(CString COM, int num_card)
 {
 	/*
 		Affiche une nouvelle fenêtre à chaque fois qu'une nouvelle carte est connectée
@@ -280,25 +297,30 @@ int CPIKODlg::newButtonPopup()
 	*/
 	int idx_support=-1;
 
-	CMsgRFID dlg;
-	
-	if(!dlg.isAvailableSupport())//la messageBox continue d'apparaitre encore et encore
-	{
-		::MessageBox(m_hWnd,_T("Aucun support pour cette carte de disponible"),_T("Alerte !"),MB_OK);
-		return idx_support;
-	}
-	else
-	{
-		INT_PTR nResponse = dlg.DoModal();
+	//CString str; str.Format(_T("num card = %d"),num_card);
+	//::MessageBox(m_hWnd,str,_T("new card !"),MB_OK);
 
-		if(nResponse == IDOK)
-		{
-			idx_support = dlg.GetAnswer();
-			//on recupère les informations (Quel support a été sélectionné)
-			//on supprime le support numéro idx_support de la liste des supports dont il est possible d'associer une carte, 
-			//cela signifie que la prochaine carte qu'on connectera, on aura un support de moins de disponible pour associe la carte
-		}
+	CMsgRFID dlg;
+
+	INT_PTR nResponse = dlg.DoModal();
+
+	if(nResponse == IDOK)
+	{
+		idx_support = dlg.GetAnswer();
+		//on recupère les informations (Quel support a été sélectionné)
+		//on supprime le support numéro idx_support de la liste des supports dont il est possible d'associer une carte, 
+		//cela signifie que la prochaine carte qu'on connectera, on aura un support de moins de disponible pour associe la carte
 	}
 
 	return idx_support;
+}
+
+void CPIKODlg::releaseSupportButton(int idx)
+{
+	//CString str; str.Format(_T("releasing support %d"),idx);
+	//::MessageBox(m_hWnd,str,_T("msg"),MB_OK);
+
+	if(idx>=SZ_SUPPORTS_CARDS || idx <0)	return;
+	
+	CMsgRFID::releaseSupport(idx);
 }
