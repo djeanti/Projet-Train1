@@ -7,7 +7,7 @@ Pre-requis :
 
 Il existe plusieurs possiblités pour travailler avec git sur un projet, ce fichier en traitera deux.
 
-# Avec un logiciel client pour git : Fork (conseillé)
+## Avec un logiciel client pour git : Fork (conseillé)
 
 Etape 1 : Télecharger le logiciel Fork (https://git-fork.com/)
 
@@ -70,7 +70,7 @@ d'abord la récupérer avant d'envoyer notre modification sinon on a une erreur 
 
 Puis une fois terminé on fait un push (les boutons push et pull sont dans le menu en haut de Fork).
 	
-# Avec Git Bash uniquement (sans utiliser Fork ou un autre logiciel similaire)
+## Avec Git Bash uniquement (sans utiliser Fork ou un autre logiciel similaire)
 
 1) Ouvrir un git bash là ou on veut travailler sur notre ordinateur (local)
 
