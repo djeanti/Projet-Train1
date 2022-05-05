@@ -40,8 +40,7 @@ A - On vérifie que le projet fonctionne toujours malgré les nouvelles modifica
 B - Si ça fonctionne, on ouvre le dossier du projet créé par Fork sur notre ordinateur (on ouvre pas Fork pour le moment)
 	On ouvre un terminal Bash (clique droit souris > Bash Here) à l'endroit ou le dossier .git se trouve (c'est un dossier caché de base)
 
-C - On tape sur le terminal la commande suivante : "./clean.sh" , avec ça on nettoie complétement notre solution 
-	(On peut aussi utiliser l'option Nettoyer de visual studio 2008)
+C - On nettoie le projet, on peut utiliser l'option Nettoyer de visual studio 2008 pour cela.
 	
 D - Maintenant qu'on a un projet qui marche et qui est nettoyé, on peut l'envoyer sur le serveur github. 
 	On ouvre le logiciel Fork et on clique dans la fenêtre gauche du logiciel sur "Local Changes"
