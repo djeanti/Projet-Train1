@@ -46,7 +46,9 @@ C - On tape sur le terminal la commande suivante : "./clean.sh" , avec ça on ne
 D - Maintenant qu'on a un projet qui marche et qui est nettoyé, on peut l'envoyer sur le serveur github. 
 	On ouvre le logiciel Fork et on clique dans la fenêtre gauche du logiciel sur "Local Changes"
 	On a à présent deux fenêtres : Unstaged et Staged. L'idée est la suivante : on doit faire passer en "Staged" tous les fichiers 
-	qu'on souhaite envoyer sur le serveur et "discard" tous les autres. Pour passer en "Staged" un fichier on double clique dessus ou alors on fait clic droit dessus > stage
+	qu'on souhaite envoyer sur le serveur et "discard" tous les autres. 
+	
+	Pour passer en "Staged" un fichier on double clique dessus ou alors on fait clic droit dessus > stage
 	Pour discard un fichier on fait clic droit sur le fichier > discard
 	
 	A la fin on ne doit plus avoir aucun fichier dans la fenêtre Unstaged
