@@ -1,3 +1,5 @@
+# Code implémenté dans le cadre d'un projet à Polytech Paris-Saclay
+
 #Ce fichier explique l'ensemble de la procédure a suivre pour pouvoir travailler sur le Projet Train 1 à distance
 Pre-requis :
 - Un compte github
