@@ -40,7 +40,7 @@ A - On vérifie que le projet fonctionne toujours malgré les nouvelles modifica
 B - Si ça fonctionne, on ouvre le dossier du projet créé par Fork sur notre ordinateur (on ouvre pas Fork pour le moment)
 	On ouvre un terminal Bash (clique droit souris > Bash Here) à l'endroit ou le dossier .git se trouve (c'est un dossier caché de base)
 
-C - On nettoie le projet, on peut utiliser l'option Nettoyer de visual studio 2008 pour cela.
+C - On utilise l'option Nettoyer de visual studio 2008 pour débarrasser le projet de fichiers encombrants.
 	
 D - Maintenant qu'on a un projet qui marche et qui est nettoyé, on peut l'envoyer sur le serveur github. 
 	On ouvre le logiciel Fork et on clique dans la fenêtre gauche du logiciel sur "Local Changes"
