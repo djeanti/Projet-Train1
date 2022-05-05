@@ -52,7 +52,6 @@ D - Maintenant qu'on a un projet qui marche et qui est nettoyé, on peut l'envoy
 	Pour discard un fichier on fait clic droit sur le fichier > discard
 	
 	A la fin on ne doit plus avoir aucun fichier dans la fenêtre Unstaged
-	
 	(A chaque fois qu'on clique sur un fichier on peut voir sa taille, 
 	ça peut être utile sur les projets ou on travaille avec des
 	fichiers volumineux. C'est juste pour éviter d'upload un fichier 
