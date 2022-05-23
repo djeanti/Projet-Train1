@@ -49,10 +49,8 @@ D - Now that we have a project that works and that is cleaned up, we can send it
 	We open the Fork software and we click in the left window of the software on "Local Changes".
 	We now have two windows: Unstaged and Staged. The idea is the following: we must make all the files we want to send to the server "Staged". 
 	that we want to send to the server and "discard" all the others. 
-	
 	To make a file "Staged" we double click on it or we right click on it > stage
 	To discard a file you right click on the file > discard
-	
 	At the end you should have no more files in the Unstaged window
 	(Each time you click on a file you can see its size, 
 	This can be useful on projects where we work with large files.
