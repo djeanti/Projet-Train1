@@ -1,4 +1,4 @@
-# Code implemented for a project at Polytech Paris-Saclay
+# Code implemented as part of a project at Polytech Paris-Saclay
 
 #This file explains the procedure to follow in order to work with this project.
 Requirements :
