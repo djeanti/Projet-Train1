@@ -1,3 +1,6 @@
+# RFID project 
+Development of an application on PC with an MFC graphical interface that allows to record and visualize in real time the detection status of RFID tags. The application was able to drive up to 8 RFID card readers. Development in C++ and under the Visual Studio 2008 IDE. Usage of notion such as multi-threading and structuring the code with a Document/View design.
+
 # Code implemented as part of a project at Polytech Paris-Saclay
 
 #This file explains the procedure to follow in order to work with this project.
